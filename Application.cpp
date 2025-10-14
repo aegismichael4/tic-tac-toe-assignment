@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "imgui/imgui.h"
 #include "classes/TicTacToe.h"
+#include "Logger.h"
 
 namespace ClassGame {
         //
@@ -16,6 +17,12 @@ namespace ClassGame {
         //
         void GameStartUp() 
         {
+            // Initialize logging system
+            Logger& logger = Logger::GetInstance();
+            logger.LogInfo("Game started successfully");
+            logger.LogGameEvent("Application initialized");
+
+            // Initialize game
             game = new TicTacToe();
             game->setUpBoard();
         }
@@ -26,6 +33,8 @@ namespace ClassGame {
         //
         void RenderGame() 
         {
+                Logger::GetInstance().RenderGame();
+
                 ImGui::DockSpaceOverViewport();
 
                 //ImGui::ShowDemoWindow();
