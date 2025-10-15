@@ -158,8 +158,8 @@ Player* TicTacToe::ownerAt(int index ) const
     // if there is no bit at that location (in _grid) return nullptr
     // otherwise return the owner of the bit at that location using getOwner()
 
-    if (_grid[index / 3][index % 3].bit() == nullptr) return nullptr;
-    else return _grid[index / 3][index % 3].bit()->getOwner();
+    if (_grid[index % 3][index / 3].bit() == nullptr) return nullptr;
+    else return _grid[index % 3][index / 3].bit()->getOwner();
 }
 
 Player* TicTacToe::checkForWinner()
@@ -186,10 +186,12 @@ Player* TicTacToe::checkForWinner()
     std::string state = stateString();
     for (int i=0; i<8; i++) {
         const int* triple = winningTriples[i];
-        char player = state[triple[0]];
+        char player =(state[triple[0]]);
         if (player != '0' && player == state[triple[1]] && player == state[triple[2]]) {
-            std::string log = "Winner: Player  ";
-            return ownerAt(i);
+            std::string log = "Player x wins!!!";
+            log[7] = player;
+            Logger::GetInstance().LogGameEvent(log);
+            return ownerAt(triple[0]);
         }
     }
     
@@ -203,12 +205,9 @@ bool TicTacToe::checkForDraw()
     // if any square is empty, return false
     // otherwise return true
 
-    if (!boardFull(stateString()) || checkForWinner() != nullptr) {
-        return true;
-    } else {
-        Logger::GetInstance().LogGameEvent("Draw!!!!!!!");
-        return false;
-    }
+    bool result = boardFull(stateString()) && checkForWinner() == nullptr;
+    if (result) Logger::GetInstance().LogGameEvent("Draw!");
+    return result;
 }
 
 //

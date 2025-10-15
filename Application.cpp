@@ -72,7 +72,6 @@ namespace ClassGame {
             Player *winner = game->checkForWinner();
             if (winner)
             {
-                Logger::GetInstance().LogInfo("Game Over!!!!");
                 gameOver = true;
                 gameWinner = winner->playerNumber();
             }
