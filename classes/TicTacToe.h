@@ -38,7 +38,7 @@ private:
 
     bool        boardFull(const std::string& state);
     int         aiWinner(const std::string& state);
-    int         negamax(std::string& state, int depth, int playerColor);
+    int         negamax(std::string& state, int a, int b, int playerColor);
 
     Square      _grid[3][3];
 
