@@ -93,7 +93,7 @@ void Game::endTurn()
 
 void Game::scanForMouse()
 {
-	if (false && gameHasAI() && getCurrentPlayer()->isAIPlayer()) 
+	if (gameHasAI() && getCurrentPlayer()->isAIPlayer()) 
     {
         updateAI();
         return;

@@ -96,13 +96,19 @@ bool TicTacToe::actionForEmptyHolder(BitHolder *holder)
 {
     // 1) Guard clause: if holder is nullptr, fail fast.
     //    (Beginner hint: always check pointers before using them.)
-    if (!holder) return false;
+    if (!holder) {
+        Logger::GetInstance().LogError("attempting to place piece in null holder");
+        return false;
+    }
 
     // 2) Is it actually empty?
     //    Ask the holder for its current Bit using the bit() function.
     //    If there is already a Bit in this holder, return false.
     Bit* bit = holder->bit();
-    if (bit) return false;
+    if (bit) {
+        Logger::GetInstance().LogWarning("attempting to place piece in full holder");
+        return false;
+    }
 
     // 3) Place the current player's piece on this holder:
     //    - Figure out whose turn it is (getCurrentPlayer()->playerNumber()).
@@ -313,7 +319,7 @@ void TicTacToe::updateAI()
     for (int i = 0; i < 9; i++) {
         if (state[i] == '0') {
             state[i] = '2';
-            int negamaxResult = -negamax(state, 0, HUMAN_PLAYER);
+            int negamaxResult = -negamax(state, 0, AI_PLAYER);
             if (negamaxResult > bestMove) {
                 bestMove = negamaxResult;
                 bestSquare = i;
@@ -324,8 +330,8 @@ void TicTacToe::updateAI()
     }
 
     if (bestSquare != -1) {
-        int xcol = bestSquare % 3;
-        int ycol = bestSquare / 3;
+        int ycol = bestSquare % 3;
+        int xcol = bestSquare / 3;
         BitHolder *holder = &_grid[ycol][xcol];
         actionForEmptyHolder(holder);
         endTurn();
@@ -346,9 +352,7 @@ int TicTacToe::aiWinner(const std::string& state) {
             return 10;
         }
     }
-
     return 0;
-
 }
 
 int TicTacToe::negamax(std::string& state, int depth, int playerColor) {
@@ -371,9 +375,9 @@ int TicTacToe::negamax(std::string& state, int depth, int playerColor) {
     for (int i=0; i<9; i++) {
         if (state[i] == '0') {
             state[i] = playerColor == HUMAN_PLAYER ? '2' : '1';
-            int result = -negamax(state, depth-1, -playerColor);
-            if (result > bestVal) {
-                bestVal = result;
+            int negamaxResult = -negamax(state, depth-1, 1-playerColor);
+            if (negamaxResult > bestVal) {
+                bestVal = negamaxResult;
             }
             state[i] = '0';
         }
