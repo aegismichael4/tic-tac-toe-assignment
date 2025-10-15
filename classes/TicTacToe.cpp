@@ -85,6 +85,8 @@ void TicTacToe::setUpBoard()
         setAIPlayer(AI_PLAYER);
     }
 
+    startGame();
+
 }
 
 //
@@ -136,6 +138,8 @@ void TicTacToe::stopGame()
     // clear out the board
     // loop through the 3x3 array and call destroyBit on each square
 
+    Logger::GetInstance().LogGameEvent("Stop Game.");
+
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++)  {
             _grid[i][j].destroyBit();
@@ -154,8 +158,8 @@ Player* TicTacToe::ownerAt(int index ) const
     // if there is no bit at that location (in _grid) return nullptr
     // otherwise return the owner of the bit at that location using getOwner()
 
-    if (_grid[index % 3][index / 3].bit() == nullptr) return nullptr;
-    else return _grid[index % 3][index / 3].bit()->getOwner();
+    if (_grid[index / 3][index % 3].bit() == nullptr) return nullptr;
+    else return _grid[index / 3][index % 3].bit()->getOwner();
 }
 
 Player* TicTacToe::checkForWinner()
@@ -179,12 +183,13 @@ Player* TicTacToe::checkForWinner()
 
     // Hint: Consider using an array to store the winning combinations
     // to avoid repetitive code
-
+    std::string state = stateString();
     for (int i=0; i<8; i++) {
         const int* triple = winningTriples[i];
-        char player = triple[0];
-        if (player != '0' && player == triple[1] && player == triple[2]) {
-            return player == '1' ? ownerAt(1): ownerAt(2);
+        char player = state[triple[0]];
+        if (player != '0' && player == state[triple[1]] && player == state[triple[2]]) {
+            std::string log = "Winner: Player  ";
+            return ownerAt(i);
         }
     }
     
@@ -197,7 +202,13 @@ bool TicTacToe::checkForDraw()
     // is the board full with no winner?
     // if any square is empty, return false
     // otherwise return true
-    return boardFull(stateString()) && checkForWinner() != nullptr;
+
+    if (!boardFull(stateString()) || checkForWinner() != nullptr) {
+        return true;
+    } else {
+        Logger::GetInstance().LogGameEvent("Draw!!!!!!!");
+        return false;
+    }
 }
 
 //
@@ -233,7 +244,7 @@ std::string TicTacToe::stateString() const
     for (int y=0; y<3; y++) {
         for (int x=0; x<3; x++) {
             int currIndex = y * 3 + x;
-            Bit *bit = _grid[y][x].bit();
+            Bit *bit = _grid[x][y].bit();
             if (bit == nullptr || bit->getOwner() == nullptr) result[currIndex] = '0';
             else result[currIndex] = std::to_string(bit->getOwner()->playerNumber() + 1)[0];
         }
@@ -319,7 +330,7 @@ void TicTacToe::updateAI()
         BitHolder *holder = &_grid[ycol][xcol];
         actionForEmptyHolder(holder);
         endTurn();
-        Logger::GetInstance().LogInfo("Recursions: " + _recursions);
+        Logger::GetInstance().LogInfo("Recursions: " + std::to_string(_recursions));
     }
 }
 
