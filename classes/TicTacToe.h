@@ -35,6 +35,12 @@ private:
     Bit *       PieceForPlayer(const int playerNumber);
     Player*     ownerAt(int index ) const;
 
+    bool        boardFull(const std::string& state);
+    bool        aiWinner(const std::string& state);
+    int         negamax(std::string& state, int depth, int playerColor);
+
     Square      _grid[3][3];
+
+    int         _recursions;
 };
 

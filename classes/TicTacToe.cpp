@@ -27,7 +27,7 @@
 const int AI_PLAYER   = 1;      // index of the AI player (O)
 const int HUMAN_PLAYER= 0;      // index of the human player (X)
 
-const ImVec3[] winningTriples = [
+static const int[][] winningTriples = {
     {0,1,2},
     {3,4,5},
     {6,7,8},
@@ -36,7 +36,7 @@ const ImVec3[] winningTriples = [
     {2,5,8},
     {0,4,8},
     {2,4,6}
-];
+};
 
 TicTacToe::TicTacToe()
 {
@@ -79,6 +79,10 @@ void TicTacToe::setUpBoard()
             ImVec2 position((float)i * 100 + 20, (float)j * 100 + 40);
             _grid[i][j].initHolder(position, "square.png", i, j);
         }
+    }
+
+    if(gameHasAI()) {
+        setAIPlayer(AI_PLAYER);
     }
 
 }
@@ -176,7 +180,11 @@ Player* TicTacToe::checkForWinner()
     // Hint: Consider using an array to store the winning combinations
     // to avoid repetitive code
 
-    
+    const int* triple = winningTriples[i];
+    char player = state[triple[0]];
+    if (player == state[triple[1]] && player == state[triple[2]]) {
+        return player == '0' ? : ;
+    }
 
     return nullptr;
 }
@@ -186,7 +194,7 @@ bool TicTacToe::checkForDraw()
     // is the board full with no winner?
     // if any square is empty, return false
     // otherwise return true
-    return false;
+    return boardFull(stateString()) && checkForWinner() != nullptr;
 }
 
 //
@@ -254,5 +262,80 @@ void TicTacToe::setStateString(const std::string &s)
 void TicTacToe::updateAI() 
 {
     // we will implement the AI in the next assignment!
+
+    _recursions = 0;
+
+    int bestMove = -1000;
+    int bestSquare = -1;
+
+    std::string state = stateString();
+    for (int i = 0; i < 9; i++) {
+        if (state[i] == '0') {
+            state[i] = '2';
+            int negamaxResult = -negamax(state, 0, HUMAN_PLAYER);
+            if (negamaxResult > bestMove) {
+                bestMove = negamaxResult;
+                bestSquare = i;
+            }
+            state[i] = '0';
+
+        }
+    }
+
+    if (bestSquare != -1) {
+        int xcol = bestSquare % 3;
+        int ycol = bestSquare / 3;
+        BitHolder *holder = &_grid[ycol][xcol];
+        actionForEmptyHolder(holder);
+        endTurn();
+        Logger::GetInstance().LogInfo("Recursions: " + _recursions);
+    }
 }
 
+bool boardFull(const std::string& state) {
+    return state.find('0') == std::string::npos;
+}
+
+bool aiWinner(const std::string& state) {
+
+    for (int i=0; i<8; i++) {
+        const int* triple = winningTriples[i];
+        char player = state[triple[0]];
+        if (player != '0' && player == state[triple[1]] && player == state[triple[2]]) {
+            return 10;
+        }
+    }
+}
+
+int TicTacToe::negamax(std::string& state, int depth, int playerColor) {
+    
+    _recursions++;
+
+    int bestVal = -1000;
+    int boardWinner = aiWinner(state);
+    if (boardWinner) {
+        // we are returning the value to the recursion above, so negate
+        // because it's the opposite of what they want
+        return -boardWinner;
+    }
+
+    bool boardFull = boardFull(state);
+    if (boardFull) {
+        // draw
+        return 0;
+    }
+
+    for (int i=0; i<9; i++) {
+        if (state[i] == '0') {
+            state[i] = playerColor == HUMAN_PLAYER ? '2' : '1';
+            int result = -negamax(state, depth-1, -playerColor);
+            if (result > bestVal) {
+                bestVal = result;
+            }
+            state[i] = '0';
+        }
+    }
+
+    return bestVal;
+
+}
