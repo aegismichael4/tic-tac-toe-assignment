@@ -27,7 +27,7 @@
 const int AI_PLAYER   = 1;      // index of the AI player (O)
 const int HUMAN_PLAYER= 0;      // index of the human player (X)
 
-static const int[][] winningTriples = {
+static const int winningTriples[8][3] = {
     {0,1,2},
     {3,4,5},
     {6,7,8},
@@ -180,11 +180,14 @@ Player* TicTacToe::checkForWinner()
     // Hint: Consider using an array to store the winning combinations
     // to avoid repetitive code
 
-    const int* triple = winningTriples[i];
-    char player = state[triple[0]];
-    if (player == state[triple[1]] && player == state[triple[2]]) {
-        return player == '0' ? : ;
+    for (int i=0; i<8; i++) {
+        const int* triple = winningTriples[i];
+        char player = triple[0];
+        if (player != '0' && player == triple[1] && player == triple[2]) {
+            return player == '1' ? ownerAt(1): ownerAt(2);
+        }
     }
+    
 
     return nullptr;
 }
@@ -224,7 +227,19 @@ std::string TicTacToe::stateString() const
     // remember that player numbers are zero-based, so add 1 to get '1' or '2'
     // if the bit is null, add '0' to the string
     // finally, return the constructed string
-    return "000000000";
+
+    std::string result = "000000000";
+    
+    for (int y=0; y<3; y++) {
+        for (int x=0; x<3; x++) {
+            int currIndex = y * 3 + x;
+            Bit *bit = _grid[y][x].bit();
+            if (bit == nullptr || bit->getOwner() == nullptr) result[currIndex] = '0';
+            else result[currIndex] = std::to_string(bit->getOwner()->playerNumber() + 1)[0];
+        }
+    }
+
+    return result;
 }
 
 //
@@ -253,6 +268,22 @@ void TicTacToe::setStateString(const std::string &s)
     // loop through the 3x3 array and set each square accordingly
     // the string should always be valid, so you don't need to check its length or contents
     // but you can assume it will always be 9 characters long and only contain '0', '1', or '2'
+
+    for(int i=0; i<9; i++) {
+        int y = i % 3;
+        int x = i / 3;
+
+        BitHolder *holder = &_grid[y][x];
+        holder->destroyBit();
+
+        if (s[i] != '0') { // not empty
+            int playerNum = s[i] == '1' ? 0 : 1;
+            Bit* newBit = PieceForPlayer(playerNum);
+            newBit->setPosition(holder->getPosition());
+            holder->setBit(newBit);
+        }
+        
+    }
 }
 
 
@@ -292,11 +323,11 @@ void TicTacToe::updateAI()
     }
 }
 
-bool boardFull(const std::string& state) {
+bool TicTacToe::boardFull(const std::string& state) {
     return state.find('0') == std::string::npos;
 }
 
-bool aiWinner(const std::string& state) {
+int TicTacToe::aiWinner(const std::string& state) {
 
     for (int i=0; i<8; i++) {
         const int* triple = winningTriples[i];
@@ -305,6 +336,9 @@ bool aiWinner(const std::string& state) {
             return 10;
         }
     }
+
+    return 0;
+
 }
 
 int TicTacToe::negamax(std::string& state, int depth, int playerColor) {
@@ -319,8 +353,7 @@ int TicTacToe::negamax(std::string& state, int depth, int playerColor) {
         return -boardWinner;
     }
 
-    bool boardFull = boardFull(state);
-    if (boardFull) {
+    if (boardFull(state)) {
         // draw
         return 0;
     }

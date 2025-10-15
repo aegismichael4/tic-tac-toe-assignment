@@ -1,6 +1,7 @@
 #pragma once
 #include "Game.h"
 #include "Square.h"
+#include "../Logger.h"
 
 //
 // the classic game of tic tac toe
@@ -36,7 +37,7 @@ private:
     Player*     ownerAt(int index ) const;
 
     bool        boardFull(const std::string& state);
-    bool        aiWinner(const std::string& state);
+    int         aiWinner(const std::string& state);
     int         negamax(std::string& state, int depth, int playerColor);
 
     Square      _grid[3][3];
