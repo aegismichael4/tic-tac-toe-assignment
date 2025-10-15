@@ -10,6 +10,7 @@ namespace ClassGame {
         TicTacToe *game = nullptr;
         bool gameOver = false;
         int gameWinner = -1;
+        std::string aiButtonLabel = "Enable AI";
 
         //
         // game starting point
@@ -45,6 +46,11 @@ namespace ClassGame {
                 ImGui::Begin("Settings");
                 ImGui::Text("Current Player Number: %d", game->getCurrentPlayer()->playerNumber());
                 ImGui::Text("Current Board State: %s", game->stateString().c_str());
+
+                if(ImGui::Button(aiButtonLabel.c_str())) {
+                    bool enabled = game->changeAIEnableStatus();
+                    aiButtonLabel = enabled ? "Disable AI" : "Enable AI";
+                }
 
                 if (gameOver) {
                     ImGui::Text("Game Over!");

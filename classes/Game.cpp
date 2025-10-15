@@ -3,6 +3,7 @@
 #include "BitHolder.h"
 #include "Turn.h"
 #include "../Application.h"
+#include "../Logger.h"
 
 Game::Game()
 {
@@ -16,6 +17,7 @@ Game::Game()
 	_gameOptions.score = 0;
 	_gameOptions.AIDepthSearches = 0;
 	_gameOptions.AIvsAI = false;
+	_gameOptions.AIEnabled = false;
 	
 	_score = 0;
 	_table = nullptr;
@@ -93,7 +95,7 @@ void Game::endTurn()
 
 void Game::scanForMouse()
 {
-	if (gameHasAI() && getCurrentPlayer()->isAIPlayer()) 
+	if (_gameOptions.AIEnabled && gameHasAI() && getCurrentPlayer()->isAIPlayer()) 
     {
         updateAI();
         return;
@@ -169,6 +171,15 @@ bool Game::animateAndPlaceBitFromTo(Bit *bit, BitHolder*src, BitHolder*dst)
 bool Game::gameHasAI()
 {
     return false;
+}
+
+bool Game::changeAIEnableStatus() {
+	if (!gameHasAI()) {
+		Logger::GetInstance().LogError("Game does not have AI");
+		return false;
+	}
+	_gameOptions.AIEnabled = !_gameOptions.AIEnabled;
+	return _gameOptions.AIEnabled;
 }
 
 void Game::updateAI()

@@ -24,6 +24,7 @@ struct GameOptions
 	int AIDepthSearches;
 	int AIMAXDepth;
 	bool AIvsAI;
+	bool AIEnabled;
 };
 
 class Game
@@ -41,6 +42,10 @@ public:
 
 	// end the current game turn
 	void	endTurn();
+
+	// turns ai on/off
+	bool 	changeAIEnableStatus();
+
 	
 	// Should return true if it is legal for the given bit to be moved from its current holder.
 	// Default implementation always returns true. 
